@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>unit parser</title>
+    <style>
+    html {
+      color: gray;
+      font-family: monospace;
+    }
+
+    fieldset {
+      font-size: small;
+    }
+
+    input {
+      font-size: x-large;
+      color: black;
+    }
+
+    #result {
+      font-size: x-large;
+      color: black;
+    }
+    </style>
+  </head>
+  <body>
+    <fieldset>
+      <legend>input</legend>
+      <form>
+        <input type="text" placeholder="e.g. 10 degree, degree">
+        <input type="submit" value="parse">
+      </form>
+    </fieldset>
+
+    <fieldset>
+      <legend>result</legend>
+      <section id="result"></section>
+    </fieldset>
+
+    <fieldset>
+      <legend>supported units</legend>
+      <ul></ul>
+    </fieldset>
+
+    <script type="module">
+    import { UnitParser } from "./unit-parser.js";
+    const unitParser = new UnitParser();
+
+    const form = document.querySelector("form");
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+
+      // Parse.
+      const elem = document.querySelector("#result");
+      const input = document.querySelector("input[type=text]");
+      const result = unitParser.parse(input.value);
+
+      elem.textContent = result
+        ? Object.entries(result).map(([key, value]) => key + ": " + value).join(", ")
+        : "failed to parse";
+    });
+
+
+    // Show supported units.
+    const groupMap = new Map();
+
+    for (const rule of unitParser._rules) {
+      if (!groupMap.has(rule.group)) {
+        groupMap.set(rule.group, new Map());
+      }
+
+      const unitMap = groupMap.get(rule.group);
+
+      if (!unitMap.has(rule.unit)) {
+        unitMap.set(rule.unit, []);
+      }
+
+      const list = unitMap.get(rule.unit);
+      list.push(rule);
+    }
+
+    const ul = document.querySelector("ul");
+
+    for (const [group, unitMap] of groupMap.entries()) {
+      const groupLi = document.createElement("li");
+      groupLi.textContent = group;
+
+      const unitUl = document.createElement("ul");
+
+      for (const [unit, rules] of unitMap.entries()) {
+        const unitLi = document.createElement("li");
+        unitLi.textContent = unit;
+        unitUl.append(unitLi);
+
+        const ruleUl = document.createElement("ul");
+
+        for (const { regexp, lang } of rules) {
+          const ruleLi = document.createElement("li");
+          ruleLi.textContent = lang + ": " + regexp;
+          ruleUl.append(ruleLi);
+        }
+
+        unitUl.append(ruleUl);
+      }
+
+      groupLi.append(unitUl);
+      ul.append(groupLi);
+    }
+    </script>
+  </body>
+</html>

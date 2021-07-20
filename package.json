@@ -1,0 +1,12 @@
+{
+  "name": "unit-parser",
+  "version": "0.1.0",
+  "homepage": "./",
+  "private": true,
+  "scripts": {
+    "start": "browser-sync start --server --files *"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.27.4"
+  }
+}
