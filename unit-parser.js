@@ -229,7 +229,7 @@ export class UnitParser {
               }
             }
             return null;
-          }).filter(Boolean).join("\\s*");
+          }).filter(Boolean).join("\\s*") + "$";
 
           const regexp = new RegExp(regexpString, "i");
           const rule = { regexp, unit, group, lang };
