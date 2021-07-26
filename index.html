@@ -18,6 +18,10 @@
       color: black;
     }
 
+    input[type=text] {
+      width: 20em;
+    }
+
     #result {
       font-size: x-large;
       color: black;
@@ -28,7 +32,7 @@
     <fieldset>
       <legend>input</legend>
       <form>
-        <input type="text" placeholder="e.g. 10 degree">
+        <input type="text" placeholder="e.g. 10 degree, 午前10時 Asia/Tokyo">
         <input type="submit" value="parse">
       </form>
     </fieldset>
@@ -39,13 +43,20 @@
     </fieldset>
 
     <fieldset>
-      <legend>supported units</legend>
-      <ul></ul>
+      <legend>supported unit queries</legend>
+      <ul id="supported-unit-queries"></ul>
+    </fieldset>
+
+    <fieldset>
+      <legend>supported timezone queries</legend>
+      <ul id="supported-timezone-queries"></ul>
     </fieldset>
 
     <script type="module">
     import { UnitParser } from "./unit-parser.js";
+    import { TimezoneParser } from "./timezone-parser.js";
     const unitParser = new UnitParser();
+    const timezoneParser = new TimezoneParser();
 
     const form = document.querySelector("form");
     form.addEventListener("submit", e => {
@@ -54,15 +65,15 @@
       // Parse.
       const elem = document.querySelector("#result");
       const input = document.querySelector("input[type=text]");
-      const result = unitParser.parse(input.value);
 
+      const result = unitParser.parse(input.value) || timezoneParser.parse(input.value);
       elem.textContent = result
         ? Object.entries(result).map(([key, value]) => key + ": " + value).join(", ")
         : "failed to parse";
     });
 
 
-    // Show supported units.
+    // Show supported unit queries.
     const groupMap = new Map();
 
     for (const rule of unitParser._rules) {
@@ -80,7 +91,7 @@
       list.push(rule);
     }
 
-    const ul = document.querySelector("ul");
+    const unitQueryUl = document.querySelector("#supported-unit-queries");
 
     for (const [group, unitMap] of groupMap.entries()) {
       const groupLi = document.createElement("li");
@@ -105,7 +116,16 @@
       }
 
       groupLi.append(unitUl);
-      ul.append(groupLi);
+      unitQueryUl.append(groupLi);
+    }
+
+    // Show supported timezone queries.
+    const timezoneQueryUl = document.querySelector("#supported-timezone-queries");
+
+    for (const { lang, regexp } of timezoneParser._rules) {
+      const li = document.createElement("li");
+      li.textContent = lang + ": " + regexp;
+      timezoneQueryUl.append(li);
     }
     </script>
   </body>
