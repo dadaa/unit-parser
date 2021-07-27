@@ -35,7 +35,13 @@ export class QueryParser {
 
       const fromUnit = this._unitParser.parse(fromString);
       const toUnit = this._unitParser.parse(toString);
-      if (fromUnit && toUnit && fromUnit.group === toUnit.group) {
+      if (
+        fromUnit &&
+        toUnit &&
+        fromUnit.group === toUnit.group &&
+        fromUnit.value &&
+        !toUnit.value
+      ) {
         return { type: "unit", from: fromUnit, to: toUnit, lang };
       }
 
