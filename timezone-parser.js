@@ -98,10 +98,10 @@ export class TimezoneParser {
           return "(\\S+)";
         }
         case "hour": {
-          return "(\\d+)";
+          return "(\\d{1,2})";
         }
         case "minute": {
-          return "(\\d+)";
+          return "(\\d{1,2})";
         }
         case "literal": {
           return value;
