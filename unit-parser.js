@@ -242,7 +242,7 @@ export class UnitParser {
               }
             }
             return null;
-          }).filter(Boolean).join("\\s*") + "$";
+          }).filter(Boolean).join("") + "$";
 
           const regexpWithoutValue = new RegExp(regexpStringWithoutValue, "i");
           const ruleWithoutValue = { regexp: regexpWithoutValue, unit, group, lang };
