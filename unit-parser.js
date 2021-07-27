@@ -192,14 +192,12 @@ const CLDR_REGULAR_UNITS = [
   "volume-barrel",
 ];
 
-const SUPPORTED_LANGS = ["en", "ja", "zh"];
-
 export class UnitParser {
-  constructor() {
-    this._init();
+  constructor(langs) {
+    this._init(langs);
   }
 
-  _init() {
+  _init(langs) {
     const rules = [];
 
     for (const unitWithGroup of CLDR_REGULAR_UNITS) {
@@ -208,7 +206,7 @@ export class UnitParser {
       const group = matches[1];
       const unit = matches[2];
 
-      for (const lang of SUPPORTED_LANGS) {
+      for (const lang of langs) {
         try {
           // Get formatted parts from Intl.Numberformat for given unit and lang.
           // If Intl.Numberformat can't recognize the unit or lang, throw an error.

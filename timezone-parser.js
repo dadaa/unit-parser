@@ -1,14 +1,12 @@
-const SUPPORTED_LANGS = ["en", "ja", "zh"];
-
 export class TimezoneParser {
-  constructor() {
-    this._init();
+  constructor(langs) {
+    this._init(langs);
   }
 
-  _init() {
+  _init(langs) {
     const rules = [];
 
-    for (const lang of SUPPORTED_LANGS) {
+    for (const lang of langs) {
       // No meridiem time rules.
       rules.push(
         this._makeRule(lang, true, {
@@ -71,6 +69,15 @@ export class TimezoneParser {
         );
       }
     }
+
+    rules.push({
+      regexp: /^(\S+)$/i,
+      type: "timezone",
+      hourIndex: -1,
+      minuteIndex: -1,
+      timezoneIndex: 0,
+      lang: "en",
+    });
 
     this._rules = rules;
   }

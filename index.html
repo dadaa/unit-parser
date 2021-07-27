@@ -30,9 +30,17 @@
   </head>
   <body>
     <fieldset>
-      <legend>input</legend>
-      <form>
+      <legend>unit query</legend>
+      <form id="unit-parsing">
         <input type="text" placeholder="e.g. 10 degree, 午前10時 Asia/Tokyo">
+        <input type="submit" value="parse">
+      </form>
+    </fieldset>
+
+    <fieldset>
+      <legend>unit conversion query</legend>
+      <form id="unit-conversion">
+        <input type="text" placeholder="e.g. 10 meter to mile">
         <input type="submit" value="parse">
       </form>
     </fieldset>
@@ -53,23 +61,63 @@
     </fieldset>
 
     <script type="module">
+    import { QueryParser } from "./query-parser.js";
     import { UnitParser } from "./unit-parser.js";
     import { TimezoneParser } from "./timezone-parser.js";
-    const unitParser = new UnitParser();
-    const timezoneParser = new TimezoneParser();
 
-    const form = document.querySelector("form");
-    form.addEventListener("submit", e => {
+    const SUPPORTED_LANGS = ["en", "ja", "zh"];
+    const queryParser = new QueryParser(SUPPORTED_LANGS);
+    // Assume these templates are made by localizers.
+    queryParser.addTemplate("en", "${from} to ${to}")
+    queryParser.addTemplate("en", "from ${from} to ${to}")
+    queryParser.addTemplate("ja", "${from}を${to}に")
+    queryParser.addTemplate("ja", "${from}から${to}に")
+    queryParser.addTemplate("zh", "${from}到${to}")
+    queryParser.addTemplate("ja", "${to}に${from}から")
+    const unitParser = new UnitParser(SUPPORTED_LANGS);
+    const timezoneParser = new TimezoneParser(SUPPORTED_LANGS);
+
+    const formUnitParsing = document.querySelector("#unit-parsing");
+    formUnitParsing.addEventListener("submit", e => {
       e.preventDefault();
 
       // Parse.
-      const elem = document.querySelector("#result");
-      const input = document.querySelector("input[type=text]");
-
+      const input = document.querySelector("#unit-parsing input[type=text]");
       const result = unitParser.parse(input.value) || timezoneParser.parse(input.value);
+
+      const elem = document.querySelector("#result");
       elem.textContent = result
         ? Object.entries(result).map(([key, value]) => key + ": " + value).join(", ")
         : "failed to parse";
+    });
+
+    const formUnitConversion = document.querySelector("#unit-conversion");
+    formUnitConversion.addEventListener("submit", e => {
+      e.preventDefault();
+
+      // Parse.
+      const input = document.querySelector("#unit-conversion input[type=text]");
+      const result = queryParser.parse(input.value);
+
+      const elem = document.querySelector("#result");
+      elem.innerHTML = "";
+
+      if (!result) {
+        elem.textContent = "failed to parse";
+        return;
+      }
+
+      const ul = document.createElement("ul");
+      const fromString =
+        Object.entries(result.from).map(([key, value]) => key + ": " + value).join(", ");
+      const toString =
+        Object.entries(result.to).map(([key, value]) => key + ": " + value).join(", ");
+      const fromLi = document.createElement("li");
+      fromLi.textContent = "FROM::" + fromString;
+      const toLi = document.createElement("li");
+      toLi.textContent = "TO::" + toString;
+      ul.append(fromLi, toLi);
+      elem.append(ul);
     });
 
 
