@@ -192,7 +192,7 @@ const CLDR_REGULAR_UNITS = [
   "volume-barrel",
 ];
 
-const LANGS = ["en", "ja"];
+const SUPPORTED_LANGS = ["en", "ja", "zh"];
 
 export class UnitParser {
   constructor() {
@@ -208,7 +208,7 @@ export class UnitParser {
       const group = matches[1];
       const unit = matches[2];
 
-      for (const lang of LANGS) {
+      for (const lang of SUPPORTED_LANGS) {
         try {
           // Get formatted parts from Intl.Numberformat for given unit and lang.
           // If Intl.Numberformat can't recognize the unit or lang, throw an error.
@@ -219,21 +219,34 @@ export class UnitParser {
           }).formatToParts(1);
 
           // Create regex from the parts.
-          const regexpString = "^" + parts.map(({ type, value }) => {
+          const regexpStringWithValue = "^" + parts.map(({ type, value }) => {
             switch (type) {
               case "unit": {
                 return value;
               }
               case "integer": {
-                return "(\\S*)";
+                return "(\\S+)";
               }
             }
             return null;
           }).filter(Boolean).join("\\s*") + "$";
 
-          const regexp = new RegExp(regexpString, "i");
-          const rule = { regexp, unit, group, lang };
-          rules.push(rule);
+          const regexpWithValue = new RegExp(regexpStringWithValue, "i");
+          const ruleWithValue = { regexp: regexpWithValue, unit, group, lang };
+          rules.push(ruleWithValue);
+
+          const regexpStringWithoutValue = "^" + parts.map(({ type, value }) => {
+            switch (type) {
+              case "unit": {
+                return value;
+              }
+            }
+            return null;
+          }).filter(Boolean).join("\\s*") + "$";
+
+          const regexpWithoutValue = new RegExp(regexpStringWithoutValue, "i");
+          const ruleWithoutValue = { regexp: regexpWithoutValue, unit, group, lang };
+          rules.push(ruleWithoutValue);
         } catch (e) {
           console.warn(e.message);
         }
@@ -248,7 +261,12 @@ export class UnitParser {
       // Find a rule that matches the text.
       const result = regexp.exec(text);
 
-      if (result) {
+      if (!result) {
+        continue;
+      }
+
+      // With value.
+      if (result.length === 2) {
         // Get value part.
         const value = result[1];
 
@@ -266,6 +284,8 @@ export class UnitParser {
           // If not having nan, the text could be parsed.
           return { unit, value, group, lang };
         }
+      } else {
+        return { unit, group, lang };
       }
     }
 
